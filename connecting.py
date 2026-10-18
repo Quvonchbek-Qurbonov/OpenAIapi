@@ -1,5 +1,10 @@
 import os
 from openai import OpenAI
+from openai.types.chat import (
+    ChatCompletionMessageParam,
+    ChatCompletionSystemMessageParam,
+    ChatCompletionUserMessageParam,
+)
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -11,16 +16,26 @@ if not api_key:
 
 client = OpenAI(api_key=api_key)
 
-def ask_chatgpt(user_message):
+def ask_chatgpt(user_message: str) -> str:
+    messages: list[ChatCompletionMessageParam] = [
+        ChatCompletionSystemMessageParam(
+            role="system",
+            content="You are a helpful assistant.",
+        ),
+        ChatCompletionUserMessageParam(
+            role="user",
+            content=user_message,
+        ),
+    ]
+
     response = client.chat.completions.create(
         model="gpt-4.1-nano",
-        messages=[{"role": "system", "content": "You are a helpful assistant."},
-                  {"role": "user", "content": user_message}],
+        messages=messages,
         temperature=0.7,
     )
 
-    return response.choices[0].message.content
+    return response.choices[0].message.content or ""
 
-user = "what is capital of france"
-response = ask_chatgpt(user)
-print(response)
+user = "what is the weather today"
+answer = ask_chatgpt(user)
+print(answer)
